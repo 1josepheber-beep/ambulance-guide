@@ -396,6 +396,7 @@ in the absence of environmental causes.</div>
   function applyCompHighlight(){var q=compQuery;cells.forEach(function(c){c.el.classList.toggle('hit',!!q&&c.el.dataset.name.indexOf(q)>-1);});}
   function renderCompResults(){var q=compQuery,box=document.getElementById('compResults');box.innerHTML='';if(!q){box.classList.remove('on');return;}var ms=cells.filter(function(c){return c.el.dataset.name.indexOf(q)>-1;});if(!ms.length){box.innerHTML='<div class="rnone">No item matches \u201c'+esc(q)+'\u201d.</div>';box.classList.add('on');return;}ms.slice(0,25).forEach(function(c){var row=document.createElement('div');row.className='rrow';row.innerHTML='<span class="ri">'+esc(c.b.n)+'</span><span class="rt item">'+esc(c.b.q)+'</span>';row.addEventListener('click',function(){box.classList.remove('on');flashBin(c.b);});box.appendChild(row);});box.classList.add('on');}
   document.getElementById('searchComp').addEventListener('input',function(){compQuery=this.value.trim().toLowerCase();applyCompHighlight();renderCompResults();});
+  keyNav(document.getElementById('searchComp'),document.getElementById('compResults'));
 
   /* test me */
   var quiz={name:null,right:0,total:0};
