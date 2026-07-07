@@ -146,8 +146,20 @@
   .backbtn{background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:10px 14px;font-size:13.5px;font-weight:600;color:var(--ink);display:inline-flex;align-items:center;gap:7px;margin-bottom:14px}
   .slot.focusflash{animation:focusPulse .85s ease-out 5;z-index:6}
   @keyframes focusPulse{0%{box-shadow:0 0 0 0 rgba(200,32,46,.6);border-color:#C8202E;background:rgba(200,32,46,.30)}100%{box-shadow:0 0 0 24px rgba(200,32,46,0);border-color:#C8202E;background:rgba(200,32,46,.05)}}
-  .slot .focus-arrow{position:absolute;left:50%;bottom:100%;margin-bottom:6px;transform:translateX(-50%);color:#C8202E;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45));z-index:8;pointer-events:none;animation:arrowBounce .7s ease-in-out infinite}
-  @keyframes arrowBounce{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-12px)}}
+  .slot .fa{position:absolute;z-index:8;pointer-events:none;color:#C8202E;filter:drop-shadow(0 1px 3px rgba(0,0,0,.55))}
+  .slot .fa .fg{display:block;font-size:22px;line-height:1;font-weight:700}
+  .slot .fa-top{left:50%;bottom:100%;margin-bottom:3px;transform:translateX(-50%)}
+  .slot .fa-bottom{left:50%;top:100%;margin-top:3px;transform:translateX(-50%)}
+  .slot .fa-left{right:100%;top:50%;margin-right:3px;transform:translateY(-50%)}
+  .slot .fa-right{left:100%;top:50%;margin-left:3px;transform:translateY(-50%)}
+  .slot .fa-top .fg{animation:fbTop .7s ease-in-out infinite}
+  .slot .fa-bottom .fg{animation:fbBottom .7s ease-in-out infinite}
+  .slot .fa-left .fg{animation:fbLeft .7s ease-in-out infinite}
+  .slot .fa-right .fg{animation:fbRight .7s ease-in-out infinite}
+  @keyframes fbTop{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+  @keyframes fbBottom{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  @keyframes fbLeft{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+  @keyframes fbRight{0%,100%{transform:translateX(0)}50%{transform:translateX(-6px)}}
 </style>
 </head>
 <body data-view="home" class="">
@@ -366,7 +378,7 @@ in the absence of environmental causes.</div>
   function imgRect(){var iw=img.naturalWidth||1500,ih=img.naturalHeight||843,cw=wrap.clientWidth,ch=wrap.clientHeight;var s=Math.min(cw/iw,ch/ih),w=iw*s,h=ih*s;return{left:(cw-w)/2,top:(ch-h)/2,w:w,h:h};}
   function place(el,r,R){el.style.left=(R.left+r.x*R.w)+'px';el.style.top=(R.top+r.y*R.h)+'px';el.style.width=(r.w*R.w)+'px';el.style.height=(r.h*R.h)+'px';}
   var cells=[];
-  function focusSlot(el){el.classList.add("focusflash");var arrow=document.createElement("div");arrow.className="focus-arrow";arrow.innerHTML='<svg width="34" height="40" viewBox="0 0 24 28" fill="currentColor"><path d="M12 28l-9-12h6V0h6v16h6z"/></svg>';el.appendChild(arrow);setTimeout(function(){el.classList.remove("focusflash");if(arrow.parentNode)arrow.remove();},4500);}
+  function focusSlot(el){el.classList.add("focusflash");var sides=[["fa-top","\u25BC"],["fa-bottom","\u25B2"],["fa-left","\u25B6"],["fa-right","\u25C0"]];var made=[];sides.forEach(function(s){var d=document.createElement("div");d.className="fa "+s[0];d.innerHTML='<span class="fg">'+s[1]+'</span>';el.appendChild(d);made.push(d);});setTimeout(function(){el.classList.remove("focusflash");made.forEach(function(d){if(d.parentNode)d.remove();});},4500);}
   function build(){ overlay.innerHTML='';cells=[]; if(!currentCab||!currentCab.image)return; var R=imgRect();
     currentCab.shelves.forEach(function(sh){ sh.bins.forEach(function(b){
       if(!b.rect)b.rect={x:0.44,y:0.44,w:0.11,h:0.14};
