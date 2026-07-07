@@ -17,6 +17,8 @@
   .shield{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--navy));border:2px solid rgba(255,255,255,.25);display:grid;place-items:center;font-family:var(--stencil);font-weight:700;font-size:17px}
   h1{font-family:var(--stencil);font-weight:700;letter-spacing:.5px;font-size:19px;margin:0;text-transform:uppercase}
   header p{margin:2px 0 0;font-size:11px;color:#AEC4DE}
+  header>div:not(.shield){min-width:0;flex:1;overflow:hidden}
+  #hTitle,#hSub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .hback{background:transparent;border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:7px;padding:7px 11px;font-size:12px;font-weight:600;display:none;align-items:center;gap:6px}
   body:not([data-view="home"]) .hback{display:inline-flex}
   .admin-btn{margin-left:auto;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4);border-radius:7px;padding:7px 11px;font-size:12px;font-weight:600}
@@ -101,7 +103,7 @@
   .zoomctl button{width:42px;height:42px;border-radius:11px;border:0;background:rgba(255,255,255,.96);color:var(--navy);font-size:21px;font-weight:700;box-shadow:var(--shadow);line-height:1}
 
   .bar{position:fixed;left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:8px;align-items:center}
-  #csearch{top:72px;width:min(520px,calc(100% - 24px));background:rgba(255,255,255,.97);border-radius:11px;padding:0 12px;box-shadow:var(--shadow)}
+  #csearch{top:70px;z-index:45;width:min(520px,calc(100% - 24px));background:rgba(255,255,255,.97);border-radius:11px;padding:0 12px;box-shadow:var(--shadow)}
   #csearch input{width:100%;border:0;outline:0;background:transparent;padding:12px 4px;font-size:15px;color:#132430}
   body:not([data-view="cabinet"]) #csearch,body.admin #csearch{display:none}
   .controls{bottom:20px;flex-wrap:wrap;justify-content:center}
@@ -203,7 +205,7 @@
     <div class="zoomctl"><button id="zin">+</button><button id="zout">−</button><button id="zreset">⟲</button></div>
   </div>
 </div>
-<div class="bar" id="csearch"><input id="searchComp" placeholder="Find an item in here…" autocomplete="off"></div>
+<div class="bar" id="csearch"><input id="searchComp" placeholder="Find an item in here…" autocomplete="off"><div class="results" id="compResults"></div></div>
 <div class="adminhint">Drag a box · corner to resize · ✎ edit · × delete</div>
 <div class="bar" id="testbar"><span>Find:<b id="tItem">LifeVac</b></span><span class="sc" id="tScore">2 / 5</span><button class="x" id="tStop">×</button></div>
 <div class="bar controls"><button class="ctl primary" id="testBtn">Test me</button></div>
@@ -294,7 +296,7 @@ in the absence of environmental causes.</div>
   "use strict";
   var state=JSON.parse(document.getElementById('seed-data').textContent);
   if(!state.outside)state.outside=[]; if(!state.inside)state.inside=[]; if(!state.protocols)state.protocols=[];
-  var isAdmin=false,testing=false,toastT=null,currentGroup=null,currentCab=null,pendingUploadCab=null,pendingFocus=null,activeFocusBin=null,focusUntil=0;
+  var isAdmin=false,testing=false,toastT=null,currentGroup=null,currentCab=null,pendingUploadCab=null,pendingFocus=null,activeFocusBin=null,focusUntil=0,compQuery='';
   var img=document.getElementById('cab'),overlay=document.getElementById('overlay'),wrap=document.getElementById('wrap');
 
   function esc(s){return String(s).replace(/[&<>"']/g,function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];});}
@@ -354,10 +356,11 @@ in the absence of environmental causes.</div>
 
   /* ---------- CABINET detail ---------- */
   function focusBinNow(bin){var fc=cells.filter(function(x){return x.b===bin;})[0];if(fc)focusSlot(fc.el);}
+  function flashBin(bin){activeFocusBin=bin;focusUntil=Date.now()+4600;focusBinNow(bin);}
   function openCab(c,focusBin){ currentCab=c; resetZoom(); setView('cabinet');
     document.getElementById('hTitle').textContent=c.name; document.getElementById('hSub').textContent=currentGroup==='outside'?'Exterior':'Interior';
-    document.getElementById('searchComp').value='';
-    if(c.image){ document.getElementById('noimg').classList.remove('on'); img.style.display='block'; var run=function(){build();activeFocusBin=focusBin||null;focusUntil=focusBin?Date.now()+4600:0;if(focusBin)focusBinNow(focusBin);};img.src=c.image;if(img.complete&&img.naturalWidth){run();}else{img.onload=run;} }
+    document.getElementById('searchComp').value='';compQuery='';var _cr=document.getElementById('compResults');if(_cr){_cr.classList.remove('on');_cr.innerHTML='';}
+    if(c.image){ document.getElementById('noimg').classList.remove('on'); img.style.display='block'; var run=function(){build();if(focusBin)flashBin(focusBin);else{activeFocusBin=null;focusUntil=0;}};img.src=c.image;if(img.complete&&img.naturalWidth){run();}else{img.onload=run;} }
     else { img.removeAttribute('src'); img.style.display='none'; document.getElementById('noimg').classList.add('on'); overlay.innerHTML=''; }
   }
   function imgRect(){var iw=img.naturalWidth||1500,ih=img.naturalHeight||843,cw=wrap.clientWidth,ch=wrap.clientHeight;var s=Math.min(cw/iw,ch/ih),w=iw*s,h=ih*s;return{left:(cw-w)/2,top:(ch-h)/2,w:w,h:h};}
@@ -379,6 +382,7 @@ in the absence of environmental causes.</div>
       overlay.appendChild(el);cells.push({b:b,el:el});
     }); });
     if(activeFocusBin&&Date.now()<focusUntil){var _fc=cells.filter(function(x){return x.b===activeFocusBin;})[0];if(_fc)focusSlot(_fc.el);}
+    if(compQuery)applyCompHighlight();
   }
   var drag=null;
   function startDrag(e,b,el,mode){ if(!isAdmin)return;e.preventDefault();e.stopPropagation();drag={mode:mode,b:b,el:el,sx:e.clientX,sy:e.clientY,r0:{x:b.rect.x,y:b.rect.y,w:b.rect.w,h:b.rect.h}};try{el.setPointerCapture(e.pointerId);}catch(_){}}
@@ -389,7 +393,9 @@ in the absence of environmental causes.</div>
   function delBin(sh,b){if(!confirm('Delete “'+b.n+'”?'))return;var i=sh.bins.indexOf(b);if(i>-1)sh.bins.splice(i,1);build();}
   function addSlot(){ if(!currentCab||!currentCab.image){toast('Add a photo first','no');return;} currentCab.shelves[0].bins.push({n:'New item',q:'1',rect:{x:0.44,y:0.44,w:0.11,h:0.14}});build();toast('Slot added — drag it into place','ok'); }
   function onCell(b,el){ if(suppressClick)return; toast(b.n+'  ·  '+b.q,'ok');cells.forEach(function(c){c.el.classList.remove('hit');});el.classList.add('hit');setTimeout(function(){el.classList.remove('hit');},1400);}
-  document.getElementById('searchComp').addEventListener('input',function(){var q=this.value.trim().toLowerCase();cells.forEach(function(c){c.el.classList.toggle('hit',!!q&&c.el.dataset.name.indexOf(q)>-1);});});
+  function applyCompHighlight(){var q=compQuery;cells.forEach(function(c){c.el.classList.toggle('hit',!!q&&c.el.dataset.name.indexOf(q)>-1);});}
+  function renderCompResults(){var q=compQuery,box=document.getElementById('compResults');box.innerHTML='';if(!q){box.classList.remove('on');return;}var ms=cells.filter(function(c){return c.el.dataset.name.indexOf(q)>-1;});if(!ms.length){box.innerHTML='<div class="rnone">No item matches \u201c'+esc(q)+'\u201d.</div>';box.classList.add('on');return;}ms.slice(0,25).forEach(function(c){var row=document.createElement('div');row.className='rrow';row.innerHTML='<span class="ri">'+esc(c.b.n)+'</span><span class="rt item">'+esc(c.b.q)+'</span>';row.addEventListener('click',function(){box.classList.remove('on');flashBin(c.b);});box.appendChild(row);});box.classList.add('on');}
+  document.getElementById('searchComp').addEventListener('input',function(){compQuery=this.value.trim().toLowerCase();applyCompHighlight();renderCompResults();});
 
   /* test me */
   var quiz={name:null,right:0,total:0};
@@ -458,7 +464,7 @@ in the absence of environmental causes.</div>
   hSearch.addEventListener('input',function(){buildResults(hRes,this.value,true,null);}); keyNav(hSearch,hRes);
   var gSearch=document.getElementById('groupSearch'),gRes=document.getElementById('groupResults');
   gSearch.addEventListener('input',function(){buildResults(gRes,this.value,false,currentGroup);}); keyNav(gSearch,gRes);
-  document.addEventListener('click',function(e){ if(!e.target.closest('.searchbox')){hRes.classList.remove('on');gRes.classList.remove('on');} });
+  document.addEventListener('click',function(e){ if(!e.target.closest('.searchbox')){hRes.classList.remove('on');gRes.classList.remove('on');} if(!e.target.closest('#csearch')){var _c=document.getElementById('compResults');if(_c)_c.classList.remove('on');} });
 
   /* ---------- PROTOCOLS ---------- */
   var protoCat='All';
