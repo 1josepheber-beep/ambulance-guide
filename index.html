@@ -106,6 +106,7 @@
   #csearch{top:70px;z-index:45;width:min(520px,calc(100% - 24px));background:rgba(255,255,255,.97);border-radius:11px;padding:0 12px;box-shadow:var(--shadow)}
   #csearch input{width:100%;border:0;outline:0;background:transparent;padding:12px 4px;font-size:15px;color:#132430}
   body:not([data-view="cabinet"]) #csearch,body.admin #csearch{display:none}
+  body.testing #csearch{display:none}
   .controls{bottom:20px;flex-wrap:wrap;justify-content:center}
   body:not([data-view="cabinet"]) .controls,body.admin .controls{display:none}
   .ctl{background:rgba(255,255,255,.97);border:0;border-radius:10px;padding:11px 15px;font-size:13.5px;font-weight:600;color:var(--navy);box-shadow:var(--shadow)}
@@ -116,7 +117,7 @@
   .adminhint{position:fixed;top:66px;left:50%;transform:translateX(-50%);z-index:31;display:none;background:rgba(11,42,74,.92);color:#DCE8F6;font-size:12px;padding:7px 14px;border-radius:999px;box-shadow:var(--shadow)}
   body.admin[data-view="cabinet"] .adminhint{display:block}
 
-  #testbar{top:64px;display:none;background:var(--red);color:#fff;border-radius:12px;padding:10px 15px;gap:12px;box-shadow:var(--shadow);z-index:35}
+  #testbar{top:70px;display:none;background:var(--red);color:#fff;border-radius:12px;padding:10px 15px;gap:12px;box-shadow:var(--shadow);z-index:46}
   #testbar.on{display:flex}
   #testbar b{font-family:var(--stencil);font-size:18px;letter-spacing:.4px;text-transform:uppercase;margin-left:5px}
   #testbar .sc{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.2);padding:3px 8px;border-radius:6px}
